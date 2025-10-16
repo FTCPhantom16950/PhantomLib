@@ -5,8 +5,7 @@ plugins {
 
 android {
     publishing {
-        multipleVariants {
-            allVariants()
+        singleVariant("release"){
             withJavadocJar()
             withSourcesJar()
         }
