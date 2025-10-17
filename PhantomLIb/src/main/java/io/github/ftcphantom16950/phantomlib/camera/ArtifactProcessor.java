@@ -1,4 +1,4 @@
-package io.github.ftcphantom16950.phantomlib;
+package io.github.ftcphantom16950.phantomlib.camera;
 
 import static org.opencv.core.CvType.CV_64F;
 

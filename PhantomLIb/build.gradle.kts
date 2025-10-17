@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     id("maven-publish")
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -33,6 +34,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 }
 
 dependencies {
@@ -45,6 +49,7 @@ dependencies {
     implementation ("org.firstinspires.ftc:Hardware:11.0.0")
     implementation ("org.firstinspires.ftc:FtcCommon:11.0.0")
     implementation ("org.firstinspires.ftc:Vision:11.0.0")
+    implementation(libs.core.ktx)
 }
 afterEvaluate {
     publishing{
