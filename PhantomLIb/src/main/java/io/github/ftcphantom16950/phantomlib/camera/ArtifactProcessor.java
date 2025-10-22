@@ -268,53 +268,97 @@ public class ArtifactProcessor implements VisionProcessor {
         // Установка ограничений по цвету (В оригинале сказано, что тут используются цвета HSV однако
         // по факту используется RGB)
 
-        /**
-         * Минимальный порог цвета
-         *
-         * @param minValues Минимальные значения в Scalar см.{@link Scalar}
-         * @return сборщик
-         */
-        public Builder setMinValues(Scalar minValues) {
-            processor.minValues = minValues;
-            return this;
-        }
 
         /**
-         * Максимальный порог цвета
+         * Максимальный порог зеленого цвета
          *
          * @param maxValues Минимальные значения в Scalar см.{@link Scalar}
          * @return сборщик
          */
-        public Builder setMaxValues(Scalar maxValues) {
-            processor.maxValues = maxValues;
+        public Builder setMaxGreenValues(Scalar maxValues) {
+            processor.maxValuesGreen = maxValues;
             return this;
         }
-
         /**
-         * Минимальный порог цвета
+         * Максимальный порог зеленого цвета
          *
          * @param r Минимальное значение красного
          * @param g Минимальное значение зеленого
          * @param b Минимальное значение синего
          * @return сборщик
          */
-        public Builder setMinValues(int r, int g, int b) {
-            processor.minValues = new Scalar(r, g, b);
+        public Builder setMaxGreenValues(int r, int g, int b) {
+            processor.maxValuesGreen = new Scalar(r, g, b);
+            return this;
+        }
+        /**
+         * Максимальный порог фиолетового цвета
+         *
+         * @param maxValues Минимальные значения в Scalar см.{@link Scalar}
+         * @return сборщик
+         */
+        public Builder setMaxPurpleValues(Scalar maxValues) {
+            processor.maxValuePurple = maxValues;
+            return this;
+        }
+        /**
+         * Минимальный порог фиолетового цвета
+         *
+         * @param r Минимальное значение красного
+         * @param g Минимальное значение зеленого
+         * @param b Минимальное значение синего
+         * @return сборщик
+         */
+        public Builder setMaxPurpleValues(int r, int g, int b) {
+            processor.maxValuePurple = new Scalar(r, g, b);
+            return this;
+        }
+        /**
+         * Минимальный порог зеленого цвета
+         *
+         * @param r Минимальное значение красного
+         * @param g Минимальное значение зеленого
+         * @param b Минимальное значение синего
+         * @return сборщик
+         */
+        public Builder setMinGreenValues(int r, int g, int b) {
+            processor.minValuesGreen = new Scalar(r, g, b);
+            return this;
+        }
+        /**
+         * Максимальный порог зеленого цвета
+         *
+         * @param maxValues Минимальные значения в Scalar см.{@link Scalar}
+         * @return сборщик
+         */
+        public Builder setMinGreenValues(Scalar maxValues) {
+            processor.minValuesGreen = maxValues;
+            return this;
+        }
+        /**
+         * Минимальный порог фиолетового цвета
+         *
+         * @param r Минимальное значение красного
+         * @param g Минимальное значение зеленого
+         * @param b Минимальное значение синего
+         * @return сборщик
+         */
+        public Builder setMinPurpleValues(int r, int g, int b) {
+            processor.minValuesPurple = new Scalar(r, g, b);
+            return this;
+        }
+        /**
+         * Максимальный порог фиолетового цвета
+         *
+         * @param maxValues Минимальные значения в Scalar см.{@link Scalar}
+         * @return сборщик
+         */
+        public Builder setMinPurpleValues(Scalar maxValues) {
+            processor.minValuesPurple = maxValues;
             return this;
         }
 
-        /**
-         * Максимальный порог цвета
-         *
-         * @param r Максимальное значение красного
-         * @param g Максимальное значение зеленого
-         * @param b Максимальное значение синего
-         * @return сборщик
-         */
-        public Builder setMaxValues(int r, int g, int b) {
-            processor.maxValues = new Scalar(r, g, b);
-            return this;
-        }
+
 
         /**
          * НЕ ИСПОЛЬЗОВАТЬ СОЗДАНО ДЛЯ ПРОВЕРКИ В БУДУЩЕМ БУДЕТ ОБНОВЛЕНО И ДОБАВЛЕНО
@@ -338,8 +382,8 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.pixelCameraHeight = 960;
             processor.dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(50, 50));
             processor.erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(30, 30));
-            processor.minValues = new Scalar(7, 60, 60);
-            processor.maxValues = new Scalar(15, 255, 255);
+            processor.minValuesGreen = new Scalar(7, 60, 60);
+            processor.maxValuesGreen = new Scalar(15, 255, 255);
             processor.blurSize = new Size(3, 3);
             return processor;
         }
@@ -375,11 +419,17 @@ public class ArtifactProcessor implements VisionProcessor {
             if (processor.erodeElement == null) {
                 processor.erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(30, 30));
             }
-            if (processor.minValues == null) {
-                processor.minValues = new Scalar(7, 60, 60);
+            if (processor.minValuesGreen == null) {
+                processor.minValuesGreen = new Scalar(7, 60, 60);
             }
-            if (processor.maxValues == null) {
-                processor.maxValues = new Scalar(15, 255, 255);
+            if (processor.maxValuesGreen == null) {
+                processor.maxValuesGreen = new Scalar(15, 255, 255);
+            }
+            if (processor.minValuesPurple == null) {
+                processor.minValuesPurple = new Scalar(7, 60, 60);
+            }
+            if (processor.maxValuePurple == null) {
+                processor.maxValuePurple = new Scalar(15, 255, 255);
             }
             if (processor.blurSize == null) {
                 processor.blurSize = new Size(3, 3);
@@ -432,12 +482,13 @@ public class ArtifactProcessor implements VisionProcessor {
     Mat hierarchy = new Mat();
     Mat blurredImage = new Mat();
     Mat hsvImage = new Mat();
+    Mat green = new Mat(), purple = new Mat();
     Mat mask = new Mat();
     Mat morphOutput = new Mat();
     Mat dilateElement;
     Mat erodeElement;
-    Scalar minValues;
-    Scalar maxValues;
+    Scalar minValuesGreen, minValuesPurple;
+    Scalar maxValuesGreen, maxValuePurple;
     MatOfPoint2f[] contoursPoly;
     Telemetry telemetry;
     Rect[] rects;
@@ -461,8 +512,9 @@ public class ArtifactProcessor implements VisionProcessor {
     public Object processFrame(Mat frame, long captureTimeNanos) {
         Imgproc.blur(frame, blurredImage, blurSize);
         Imgproc.cvtColor(blurredImage, hsvImage, Imgproc.COLOR_BGR2HSV);
-        Core.inRange(hsvImage, minValues, maxValues, mask);
-
+        Core.inRange(hsvImage, minValuesGreen, maxValuesGreen, green);
+        Core.inRange(hsvImage,minValuesPurple, maxValuePurple, purple);
+        Core.add(green, purple, mask);
         Imgproc.erode(mask, openingImage, erodeElement);
         Imgproc.dilate(openingImage, morphOutput, dilateElement);
 
