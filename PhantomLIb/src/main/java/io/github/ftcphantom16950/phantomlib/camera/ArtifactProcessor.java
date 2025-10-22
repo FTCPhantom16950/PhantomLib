@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Класс для обнаружеия элементов сезона 2025-2026, артифактов
+ * Класс для обнаружения элементов сезона 2025-2026, артефактов
  * Наследуется от интерфейса {@link VisionProcessor}
  */
 public class ArtifactProcessor implements VisionProcessor {
@@ -51,6 +51,7 @@ public class ArtifactProcessor implements VisionProcessor {
         private Builder() {
             processor = new ArtifactProcessor();
         }
+        // установка параметров определения
 
         /**
          * Установка размера матрицы в пикселях
@@ -81,10 +82,10 @@ public class ArtifactProcessor implements VisionProcessor {
         /**
          * Установка вращения камеры
          *
-         * @param yaw   угол поворота вокруг камерв вокруг оси z
-         * @param pitch угол поворота вокруг камерв вокруг оси x
-         * @param roll  угол поворота вокруг камерв вокруг оси y
-         * @return
+         * @param yaw   угол поворота вокруг камеры вокруг оси z
+         * @param pitch угол поворота вокруг камеры вокруг оси x
+         * @param roll  угол поворота вокруг камеры вокруг оси y
+         * @return сборщик
          */
         public Builder setCameraRot(float pitch, float roll, float yaw) {
             processor.cameraRot[0] = pitch;
@@ -105,16 +106,37 @@ public class ArtifactProcessor implements VisionProcessor {
             return this;
         }
 
-        public Builder setRazmer(float razmer) {
-            processor.razmer = razmer;
+        /**
+         * Установка реального размера объекта
+         *
+         * @param size реальный размер
+         * @return сборщик
+         */
+        public Builder setSize(float size) {
+            processor.size = size;
             return this;
         }
 
+        /**
+         * Установка фокусного расстояния в мм
+         *
+         * @param f фокусное расстояние (мм)
+         * @return сборщик
+         */
         public Builder setF(float f) {
             processor.f = f;
             return this;
         }
+        // Устновка параметров отсеивания
 
+        /**
+         * Установка параметров для отсеивания лишних объектов по дистанции
+         *
+         * @param usingDist используется ли проверка на дистанцию
+         * @param minDist   минимальная дистанция до объекта(мм)
+         * @param maxDist   максимальная дистанция до объекта(мм)
+         * @return сборщик
+         */
         public Builder setDistProperties(boolean usingDist, float minDist, float maxDist) {
             processor.usingDist = usingDist;
             processor.minDist = minDist;
@@ -122,6 +144,14 @@ public class ArtifactProcessor implements VisionProcessor {
             return this;
         }
 
+        /**
+         * Установка параметров для отсеивания лишних объектов по отношению сторон (длинны к высоте)
+         *
+         * @param usingOtn используется ли проверка на отношение сторон
+         * @param minOtn   минимальное соотношение сторон
+         * @param maxOtn   максимальное соотношение сторон
+         * @return сборщик
+         */
         public Builder setOtnProperties(boolean usingOtn, float minOtn, float maxOtn) {
             processor.usingOtn = usingOtn;
             processor.minOtn = minOtn;
@@ -129,6 +159,14 @@ public class ArtifactProcessor implements VisionProcessor {
             return this;
         }
 
+        /**
+         * Установка параметров для отсеивания лишних объектов по площади
+         *
+         * @param usingSquare используется ли проверка на площадь
+         * @param minSquare   минимальная площадь объекта
+         * @param maxSquare   максимальная площадь объекта
+         * @return сборщик
+         */
         public Builder setSquareProperties(boolean usingSquare, float minSquare, float maxSquare) {
             processor.usingSquare = usingSquare;
             processor.minSquareOnScreen = minSquare;
@@ -136,51 +174,153 @@ public class ArtifactProcessor implements VisionProcessor {
             return this;
         }
 
+        /**
+         * Добавление телеметрии
+         *
+         * @param usingTelemetry используется ли телеметрия
+         * @param telemetry      телеметрия
+         * @return сборщик
+         */
         public Builder addTelemetry(boolean usingTelemetry, Telemetry telemetry) {
             processor.usingTelemetry = usingTelemetry;
             processor.telemetry = telemetry;
             return this;
         }
+        // Установка параметров морфологических операций
+
+        /**
+         * <p>Установка параметра операции расширения светлых областей (Dilation) для обработки изображений
+         * <p>Смотреть {@link Imgproc#dilate(Mat, Mat, Mat)}
+         * или <a href="https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html#autotoc_md565">Документацию по OpenCV</a>
+         *
+         * @param dilateElement размер элемента для расширения области {@link Imgproc#getStructuringElement(int, Size)}
+         * @return сборщик
+         */
         public Builder setDilateElement(Mat dilateElement) {
             processor.dilateElement = dilateElement;
             return this;
         }
+
+        /**
+         * <p>Установка параметра операции расширения светлых областей (Dilation) для обработки изображений
+         * <p>Смотреть {@link Imgproc#dilate(Mat, Mat, Mat)}
+         * или <a href="https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html#autotoc_md565">Документацию по OpenCV</a>
+         *
+         * @param dilateHeight высота элемента для расширения области
+         * @param dilateWidth  ширина элемента для расширения области
+         * @return сборщик
+         */
         public Builder setDilateElement(int dilateHeight, int dilateWidth) {
             processor.dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(dilateWidth, dilateHeight));
             return this;
         }
+
+        /**
+         * <p>Установка параметра операции уменьшения светлых областей (Erosion) для обработки изображений
+         * <p>Смотреть {@link Imgproc#erode(Mat, Mat, Mat)}
+         * или <a href="https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html#autotoc_md566">Документацию по OpenCV</a>
+         *
+         * @param erodeElement размер элемента для сужения области {@link Imgproc#getStructuringElement(int, Size)}
+         * @return сборщик
+         */
         public Builder setErodeElement(Mat erodeElement) {
             processor.erodeElement = erodeElement;
             return this;
         }
+
+        /**
+         * <p>Установка параметра операции уменьшения светлых областей (Erosion) для обработки изображений
+         * <p>Смотреть {@link Imgproc#erode(Mat, Mat, Mat)}
+         * или <a href="https://docs.opencv.org/4.x/db/df6/tutorial_erosion_dilatation.html#autotoc_md566">Документацию по OpenCV</a>
+         *
+         * @param erodeHeight высота элемента для сужения области
+         * @param erodeWidth  ширина элемента для сужения области
+         * @return сборщик
+         */
         public Builder setErodeElement(int erodeHeight, int erodeWidth) {
             processor.erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(erodeWidth, erodeHeight));
             return this;
         }
+        // Установка параметров блюра
+
+        /**
+         * Установка параметров блюра
+         *
+         * @param blurSize размер блюра
+         * @return сборщик
+         */
         public Builder setBlurSize(Size blurSize) {
             processor.blurSize = blurSize;
             return this;
         }
+
+        /**
+         * Установка параметров блюра
+         *
+         * @param blurHeight высота пикселя блюра
+         * @param blurWidth  ширина пикселя блюра
+         * @return сборщик
+         */
         public Builder setBlurSize(int blurHeight, int blurWidth) {
             processor.blurSize = new Size(blurWidth, blurHeight);
             return this;
         }
+        // Установка ограничений по цвету (В оригинале сказано, что тут используются цвета HSV однако
+        // по факту используется RGB)
+
+        /**
+         * Минимальный порог цвета
+         *
+         * @param minValues Минимальные значения в Scalar см.{@link Scalar}
+         * @return сборщик
+         */
         public Builder setMinValues(Scalar minValues) {
             processor.minValues = minValues;
             return this;
         }
+
+        /**
+         * Максимальный порог цвета
+         *
+         * @param maxValues Минимальные значения в Scalar см.{@link Scalar}
+         * @return сборщик
+         */
         public Builder setMaxValues(Scalar maxValues) {
             processor.maxValues = maxValues;
             return this;
         }
+
+        /**
+         * Минимальный порог цвета
+         *
+         * @param r Минимальное значение красного
+         * @param g Минимальное значение зеленого
+         * @param b Минимальное значение синего
+         * @return сборщик
+         */
         public Builder setMinValues(int r, int g, int b) {
-            processor.minValues = new Scalar(r,g,b);
+            processor.minValues = new Scalar(r, g, b);
             return this;
         }
+
+        /**
+         * Максимальный порог цвета
+         *
+         * @param r Максимальное значение красного
+         * @param g Максимальное значение зеленого
+         * @param b Максимальное значение синего
+         * @return сборщик
+         */
         public Builder setMaxValues(int r, int g, int b) {
-            processor.maxValues = new Scalar(r,g,b);
+            processor.maxValues = new Scalar(r, g, b);
             return this;
         }
+
+        /**
+         * НЕ ИСПОЛЬЗОВАТЬ СОЗДАНО ДЛЯ ПРОВЕРКИ В БУДУЩЕМ БУДЕТ ОБНОВЛЕНО И ДОБАВЛЕНО
+         *
+         * @return сборщик
+         */
         public ArtifactProcessor createWithDefaults() {
             processor.usingOtn = true;
             processor.usingDist = true;
@@ -193,7 +333,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.cameraRot[1] = 0;
             processor.cameraRot[2] = 0;
             processor.c = (float) Math.sqrt(Math.pow(3.58F, 2) + Math.pow(2.02F, 2));
-            processor.razmer = 49f;
+            processor.size = 49f;
             processor.f = 4f;
             processor.pixelCameraHeight = 960;
             processor.dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(50, 50));
@@ -204,14 +344,26 @@ public class ArtifactProcessor implements VisionProcessor {
             return processor;
         }
 
+        /**
+         * Сборка проекта
+         * <p> В случае отсутствия параметров:
+         * size, c, f, pixelCameraHeight
+         * будет выброшено исключение {@link IllegalArgumentException}
+         *
+         * <p> По умолчанию берется значение позиции камеры 0 во всех осях
+         *
+         * <p> Цвет ограничивается по промежуткам от верхнего к нижнему значению
+         *
+         * @return Процессор со всеми параметрами
+         */
         public ArtifactProcessor build() {
-            if (Float.isNaN(processor.razmer)){
+            if (Float.isNaN(processor.size)) {
                 throw new IllegalArgumentException("Object height is not set");
             }
-            if (Float.isNaN(processor.c)){
+            if (Float.isNaN(processor.c)) {
                 throw new IllegalArgumentException("Camera diagonal is not set");
             }
-            if (Float.isNaN(processor.f)){
+            if (Float.isNaN(processor.f)) {
                 throw new IllegalArgumentException("Focal length is not set");
             }
             if (Float.isNaN(processor.pixelCameraHeight)) {
@@ -232,12 +384,12 @@ public class ArtifactProcessor implements VisionProcessor {
             if (processor.blurSize == null) {
                 processor.blurSize = new Size(3, 3);
             }
-            if (Float.isNaN(processor.cameraPos[0])){
+            if (Float.isNaN(processor.cameraPos[0])) {
                 processor.cameraPos[0] = 0;
                 processor.cameraPos[1] = 0;
                 processor.cameraPos[2] = 0;
             }
-            if (Float.isNaN(processor.cameraRot[0])){
+            if (Float.isNaN(processor.cameraRot[0])) {
                 processor.cameraRot[0] = 0;
                 processor.cameraRot[1] = 0;
                 processor.cameraRot[2] = 0;
@@ -250,7 +402,7 @@ public class ArtifactProcessor implements VisionProcessor {
             minDist,
             minOtn,
             maxOtn,
-            razmer,
+            size,
             f,
             pixelCameraHeight,
             c;
@@ -329,7 +481,7 @@ public class ArtifactProcessor implements VisionProcessor {
                 b = (float) (-rects[idx].tl().y + rects[idx].br().y);
                 otn = a / b;
                 h = (a * convers);
-                rectSizeOnCamera = ((f * razmer) / h);
+                rectSizeOnCamera = ((f * size) / h);
                 squareOnScreen = (a * a);
                 boolean screenProperty = !usingSquare || (squareOnScreen >= minSquareOnScreen && squareOnScreen <= maxSquareOnScreen),
                         distProperty = !usingDist || (rectSizeOnCamera >= minDist && rectSizeOnCamera <= maxDist),
