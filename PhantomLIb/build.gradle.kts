@@ -49,7 +49,7 @@ dependencies {
     implementation ("org.firstinspires.ftc:Hardware:11.0.0")
     implementation ("org.firstinspires.ftc:FtcCommon:11.0.0")
     implementation ("org.firstinspires.ftc:Vision:11.0.0")
-    implementation(libs.core.ktx)
+    implementation("androidx.core:core-ktx:1.15.0")
 }
 afterEvaluate {
     publishing{
