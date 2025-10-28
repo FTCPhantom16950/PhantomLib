@@ -20,8 +20,8 @@ public class ParallelGroup extends Group {
      *
      * @param actions действия которые будут выполняться последовательно
      */
-    public ParallelGroup(PhantomOpMode phantomOpMode, Group... actions) {
-        super(phantomOpMode);
+    public ParallelGroup(Group... actions) {
+
         this.actions.addAll(List.of(actions));
     }
 
@@ -39,13 +39,6 @@ public class ParallelGroup extends Group {
             };
             threads.add(thread);
             thread.start();
-        }
-        int i = 0;
-        for (Thread t :
-                threads) {
-            i++;
-            while (t.isAlive() && opMode.opModeIsActive()) {
-            }
         }
     }
 }

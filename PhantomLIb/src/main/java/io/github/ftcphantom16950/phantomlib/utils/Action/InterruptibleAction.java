@@ -1,5 +1,7 @@
 package io.github.ftcphantom16950.phantomlib.utils.Action;
 
+import static io.github.ftcphantom16950.phantomlib.utils.Robot.opMode;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import io.github.ftcphantom16950.phantomlib.utils.PhantomOpMode;
@@ -11,8 +13,6 @@ import io.github.ftcphantom16950.phantomlib.utils.PhantomOpMode;
  * Last Updated: 08.06.25 04:00
  */
 public abstract class InterruptibleAction extends Action {
-
-    LinearOpMode opMode;
     public boolean isInterrupted = false;
 
     public boolean isRunningOnce() {
@@ -47,8 +47,6 @@ public abstract class InterruptibleAction extends Action {
     }
     public abstract void run();
     public abstract void handleInterrupt();
-    public InterruptibleAction(PhantomOpMode opMode) {
-        super(opMode);
-        this.opMode = opMode;
+    public InterruptibleAction() {
     }
 }

@@ -12,8 +12,8 @@ import io.github.ftcphantom16950.phantomlib.utils.PhantomOpMode;
 public abstract class Action extends Group {
     /// Метод для реализации выполнения действия
     public abstract void execute();
-    protected Action(PhantomOpMode opMode) {
-        super(opMode);
+    public Action() {
+
     }
 
 }
