@@ -21,11 +21,54 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Класс для обнаружения элементов сезона 2025-2026, артефактов
  * Наследуется от интерфейса {@link VisionProcessor}
  */
 public class ArtifactProcessor implements VisionProcessor {
+
+    /**
+     * Класс для хранения координат обнаруженного артефакта.
+     */
+    public static class Artifact {
+        public float getX() {
+            return x;
+        }
+
+        public float getY() {
+            return y;
+        }
+
+        public float getZ() {
+            return z;
+        }
+
+        public final float x, y, z;
+
+        public Artifact(float x, float y, float z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        /**
+         * Рассчитывает расстояние до другого артефакта.
+         * @param other Другой артефакт.
+         * @return Расстояние между объектами.
+         */
+        public double distanceTo(Artifact other) {
+            return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2) + Math.pow(this.z - other.z, 2));
+        }
+    }
+
+    private final List<Artifact> detectedArtifacts = new ArrayList<>();
+
+    public List<Artifact> getDetectedArtifacts() {
+        return detectedArtifacts;
+    }
+
+
     /// Внутренний конструктор класса, чтобы случайно не создать неиспользуемый класс
     private ArtifactProcessor() {
     }
@@ -36,7 +79,6 @@ public class ArtifactProcessor implements VisionProcessor {
      * @return новый экземпляр {@link ArtifactProcessor}
      */
     public static Builder newBuilder() {
-        new ArtifactProcessor();
         return new Builder();
     }
 
@@ -279,6 +321,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.maxValuesGreen = maxValues;
             return this;
         }
+
         /**
          * Максимальный порог зеленого цвета
          *
@@ -291,6 +334,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.maxValuesGreen = new Scalar(r, g, b);
             return this;
         }
+
         /**
          * Максимальный порог фиолетового цвета
          *
@@ -301,6 +345,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.maxValuePurple = maxValues;
             return this;
         }
+
         /**
          * Минимальный порог фиолетового цвета
          *
@@ -313,6 +358,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.maxValuePurple = new Scalar(r, g, b);
             return this;
         }
+
         /**
          * Минимальный порог зеленого цвета
          *
@@ -325,6 +371,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.minValuesGreen = new Scalar(r, g, b);
             return this;
         }
+
         /**
          * Максимальный порог зеленого цвета
          *
@@ -335,6 +382,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.minValuesGreen = maxValues;
             return this;
         }
+
         /**
          * Минимальный порог фиолетового цвета
          *
@@ -347,6 +395,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.minValuesPurple = new Scalar(r, g, b);
             return this;
         }
+
         /**
          * Максимальный порог фиолетового цвета
          *
@@ -359,7 +408,6 @@ public class ArtifactProcessor implements VisionProcessor {
         }
 
 
-
         /**
          * НЕ ИСПОЛЬЗОВАТЬ СОЗДАНО ДЛЯ ПРОВЕРКИ В БУДУЩЕМ БУДЕТ ОБНОВЛЕНО И ДОБАВЛЕНО
          *
@@ -367,8 +415,12 @@ public class ArtifactProcessor implements VisionProcessor {
          */
         public ArtifactProcessor createWithDefaults() {
             processor.usingOtn = true;
+            processor.minOtn = 0.95f;
+            processor.maxOtn = 1.05f;
             processor.usingDist = true;
-            processor.usingSquare = true;
+            processor.minDist = 100;
+            processor.maxDist = 1000;
+            processor.usingSquare = false;
             processor.usingTelemetry = false;
             processor.cameraPos[0] = 0;
             processor.cameraPos[1] = 0;
@@ -377,7 +429,7 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.cameraRot[1] = 0;
             processor.cameraRot[2] = 0;
             processor.c = (float) Math.sqrt(Math.pow(3.58F, 2) + Math.pow(2.02F, 2));
-            processor.size = 49f;
+            processor.size = 115f;
             processor.f = 4f;
             processor.pixelCameraHeight = 960;
             processor.dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(50, 50));
@@ -385,6 +437,8 @@ public class ArtifactProcessor implements VisionProcessor {
             processor.minValuesGreen = new Scalar(7, 60, 60);
             processor.maxValuesGreen = new Scalar(15, 255, 255);
             processor.blurSize = new Size(3, 3);
+            processor.minValuesPurple = new Scalar(0, 0, 0);
+            processor.maxValuePurple = new Scalar(0, 0, 0);
             return processor;
         }
 
@@ -448,55 +502,108 @@ public class ArtifactProcessor implements VisionProcessor {
         }
     }
 
+    /// Максимальная дистанция до объекта
     private float maxDist,
-            minDist,
-            minOtn,
-            maxOtn,
-            size,
-            f,
-            pixelCameraHeight,
-            c;
+    /// Минимальная дистанция до объекта
+    minDist,
+    /// Минимальное соотношение сторон
+    minOtn,
+    /// Максимальное соотношение сторон
+    maxOtn,
+    /// Размер объекта
+    size,
+    /// Фокусное расстояние
+    f,
+    /// Размер сенсора в пикселях
+    pixelCameraHeight,
+    /// Диагональ сенсора в мм
+    c;
+    /// Позиция камеры в мм по x, y, z
     private float[] cameraPos = new float[]{0, 0, 0},
-            cameraRot = new float[]{0, 0, 0};
+    /// Поворот камеры в градусах, Roll Yaw Pitch
+    cameraRot = new float[]{0, 0, 0};
+    /// Высота объекта на сенсоре камеры
     private float h,
-            centerOfSquare,
-            x,
-            y,
-            z,
-            rectSizeOnCamera,
-            convers,
-            a,
-            b,
-            otn;
+    /// Центр прямоугольника ограничивающего объект
+    centerOfSquare,
+    /// Координата x
+    x,
+    /// Кордината y
+    y,
+    /// Координата z
+    z,
+    /// Расстояние до объекта
+    distanceToTarget,
+    /// Соотношение реального размера камеры к размеру в пикселях
+    mmPerPixel,
+    /// Высота объекта на картинке
+    a,
+    /// Ширина объекта на картинке
+    b,
+    /// Соотношение сторон объекта
+    otn;
+    /// Проверка используются ли соотношения сторон
     private boolean usingOtn,
-            usingSquare,
-            usingDist,
-            usingTelemetry;
+    /// Проверка используются ли расстояния
+    usingDist,
+    /// Проверка используются ли площади
+    usingSquare,
+    /// Проверка используется ли телеметрия
+    usingTelemetry;
+    /// Площадь объекта на фото
     private float squareOnScreen,
-            minSquareOnScreen,
-            maxSquareOnScreen;
+    /// Минимальная площадь объекта на фото
+    minSquareOnScreen,
+    /// Максимальная площадь объекта на фото
+    maxSquareOnScreen;
+    /// Матрица параметров камер
     Mat K = new Mat(3, 3, CV_64F);
+    /// Список контуров на картинке
     List<MatOfPoint> contours = new ArrayList<>();
+    /// Матрица с фильтром открытия
     Mat openingImage = new Mat();
+    /// Матрица с фильтром закрытия
     Mat closingOutput = new Mat();
+    /// Матрица иерархии контуров
     Mat hierarchy = new Mat();
+    /// Матрица заблюренного изображения
     Mat blurredImage = new Mat();
+    /// Матрица фото в HSV
     Mat hsvImage = new Mat();
-    Mat green = new Mat(), purple = new Mat();
+    /// Матрица после применения фильтра по зеленому цвету
+    Mat green = new Mat(),
+    /// Матрица после применения фильтра по фиолетовому цвету
+    purple = new Mat();
+    /// Матрица итогового изображение после фильтров по цветам
     Mat mask = new Mat();
-    Mat morphOutput = new Mat();
+    /// Матрица итогового изображения после всех обработок
+    Mat morfOutput = new Mat();
+    /// Матрица объекта для расширения светлых областей
     Mat dilateElement;
+    /// Матрица объекта для уменьшения светлых областей
     Mat erodeElement;
-    Scalar minValuesGreen, minValuesPurple;
-    Scalar maxValuesGreen, maxValuePurple;
+    /// Минимальное значение зеленого цвета
+    Scalar minValuesGreen,
+    /// Минимальное значение фиолетового цвета
+    minValuesPurple;
+    /// Максимальное значение зеленого цвета
+    Scalar maxValuesGreen,
+    /// Максимальное значение фиолетового цвета
+    maxValuePurple;
+    /// Массив полигонов контуров
     MatOfPoint2f[] contoursPoly;
+    /// Телеметрия
     Telemetry telemetry;
-    Rect[] rects;
+    /// Массив контурных прямоугольников
+    Rect[] contourRects;
+    /// Размер блюра
     Size blurSize;
 
     @Override
     public void init(int width, int height, CameraCalibration calibration) {
-        convers = (c / pixelCameraHeight);
+        // устанавливаем соотношение мм к пикселям
+        mmPerPixel = (c / pixelCameraHeight);
+        // установка параметров камеры
         K.put(0, 0, calibration.focalLengthX);
         K.put(0, 1, 0);
         K.put(0, 2, calibration.principalPointX);
@@ -510,63 +617,106 @@ public class ArtifactProcessor implements VisionProcessor {
 
     @Override
     public Object processFrame(Mat frame, long captureTimeNanos) {
+        detectedArtifacts.clear();
+        // блюрим изображение
         Imgproc.blur(frame, blurredImage, blurSize);
+        // преобразуем к HSV формату
         Imgproc.cvtColor(blurredImage, hsvImage, Imgproc.COLOR_BGR2HSV);
+        // фильтруем изображение по зеленому цвету
         Core.inRange(hsvImage, minValuesGreen, maxValuesGreen, green);
-        Core.inRange(hsvImage,minValuesPurple, maxValuePurple, purple);
+        // фильтруем изображение по фиолетовому цвету
+        Core.inRange(hsvImage, minValuesPurple, maxValuePurple, purple);
+        // совмещаем изображения
         Core.add(green, purple, mask);
+        // применяем фильтр открытия
         Imgproc.erode(mask, openingImage, erodeElement);
-        Imgproc.dilate(openingImage, morphOutput, dilateElement);
-
+        Imgproc.dilate(openingImage, morfOutput, dilateElement);
+        // применяем фильтр закрытия
         Imgproc.dilate(mask, closingOutput, dilateElement);
-        Imgproc.erode(closingOutput, morphOutput, erodeElement);
-
-        Imgproc.findContours(morphOutput, contours, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.erode(closingOutput, morfOutput, erodeElement);
+        // ищем контуры изображения
+        Imgproc.findContours(morfOutput, contours, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
+        // создаём объекты полигонов контуров
         contoursPoly = new MatOfPoint2f[contours.size()];
-        rects = new Rect[contours.size()];
+        // создаём объекты прямоугольников
+        contourRects = new Rect[contours.size()];
+        // отрисовка и создание прямоугольников
         for (int idx = 0; idx < contours.size(); idx++) {
+            // если контур не пустой
             if (contours.get(idx).toArray() != null) {
+                // создаем полигон для данного контура
                 contoursPoly[idx] = new MatOfPoint2f();
+                // аппроксимируем контур
                 Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(idx).toArray()), contoursPoly[idx], 3, true);
-                rects[idx] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[idx].toArray()));
-                a = (float) (-rects[idx].tl().x + rects[idx].br().x);
-                b = (float) (-rects[idx].tl().y + rects[idx].br().y);
+                // создаём прямоугольник
+                contourRects[idx] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[idx].toArray()));
+                // ищем стороны прямоугольника на изображении
+                a = (float) (-contourRects[idx].tl().x + contourRects[idx].br().x);
+                b = (float) (-contourRects[idx].tl().y + contourRects[idx].br().y);
+                // ищем отношение сторон
                 otn = a / b;
-                h = (a * convers);
-                rectSizeOnCamera = ((f * size) / h);
+                // высота объекта на сенсоре
+                h = (a * mmPerPixel);
+                // расчет дистанции до объекта
+                distanceToTarget = ((f * size) / h);
+                // площадь на изображении
                 squareOnScreen = (a * a);
+                // проверка параметров
                 boolean screenProperty = !usingSquare || (squareOnScreen >= minSquareOnScreen && squareOnScreen <= maxSquareOnScreen),
-                        distProperty = !usingDist || (rectSizeOnCamera >= minDist && rectSizeOnCamera <= maxDist),
+                        distProperty = !usingDist || (distanceToTarget >= minDist && distanceToTarget <= maxDist),
                         otnProperty = !usingOtn || (otn >= minOtn && otn <= maxOtn);
+                // проверка условий и отрисовка итоговых изображений
                 if (screenProperty && otnProperty && distProperty) {
+
+                    // центр диагонали центра прямоугольника
                     centerOfSquare = (a / 2);
-                    Imgproc.rectangle(frame, rects[idx].tl(), rects[idx].br(), new Scalar(255, 0, 0), 2);
-                    Point centerPoint = new Point(rects[idx].tl().x + centerOfSquare, rects[idx].tl().y + centerOfSquare);
+                    // отрисовка прямоугольника
+                    Imgproc.rectangle(frame, contourRects[idx].tl(), contourRects[idx].br(), new Scalar(255, 0, 0), 2);
+                    // точка центра
+                    Point centerPoint = new Point(contourRects[idx].tl().x + centerOfSquare, contourRects[idx].tl().y + centerOfSquare);
+                    /// Массив с углами, хранит 2 значения: горизонтальный(1) и вертикальный(0)
                     float[] angles = calculateAngle((float) centerPoint.x, (float) centerPoint.y);
-                    float D = rectSizeOnCamera;
-                    float phi = angles[1];
-                    float theta = angles[0];
-                    float xc = (float) (D * Math.cos(theta) * Math.cos(phi));
-                    float yc = (float) (D * Math.cos(theta) * Math.sin(phi));
-                    float zc = (float) (D * Math.sin(theta));
-                    float[] Pc_coords = {xc, yc, zc};
-                    Pc_coords = convertCameraToRobot(cameraPos, cameraRot, Pc_coords);
-                    x = Pc_coords[0];
-                    y = Pc_coords[1];
-                    z = Pc_coords[2];
+                    /// Координата x в системе камеры
+                    float xc = (float) (distanceToTarget * Math.cos(angles[0]) * Math.cos(angles[1]));
+                    /// Координата y в системе камеры
+                    float yc = (float) (distanceToTarget * Math.cos(angles[0]) * Math.sin(angles[1]));
+                    /// Координата z в системе камеры
+                    float zc = (float) (distanceToTarget * Math.sin(angles[0]));
+                    /// Массив координат камеры
+                    float[] cameraCoordinates = {xc, yc, zc};
+                    // перевод координат камеры в координаты робота
+                    cameraCoordinates = convertCameraToRobot(cameraPos, cameraRot, cameraCoordinates);
+                    x = cameraCoordinates[0];
+                    y = cameraCoordinates[1];
+                    z = cameraCoordinates[2];
+
+                    // логика для добавления уникальных объектов
+                    Artifact newArtifact = new Artifact(x, y, z);
+                    boolean isNew = true;
+                    for (Artifact existingArtifact : detectedArtifacts) {
+                        if (newArtifact.distanceTo(existingArtifact) < 100) {
+                            isNew = false;
+                            break;
+                        }
+                    }
+                    if (isNew) {
+                        detectedArtifacts.add(newArtifact);
+                    }
+
+                    // вывод координат на изображение
                     @SuppressLint("DefaultLocale")
-                    String text = String.format("dist: %.1f, x: %.1f, y: %.1f, z: %.1f", D, x, y, z);
-                    Imgproc.putText(frame, text, rects[idx].tl(), 1, 1, new Scalar(255, 255, 0));
-                    Imgproc.drawMarker(frame, new Point(rects[idx].tl().x + centerOfSquare, rects[idx].tl().y + centerOfSquare), new Scalar(255, 0, 0));
+                    String text = String.format("dist: %.1f, x: %.1f, y: %.1f, z: %.1f", distanceToTarget, x, y, z);
+                    Imgproc.putText(frame, text, contourRects[idx].tl(), 1, 1, new Scalar(255, 255, 0));
+                    // отрисовка центра прямоугольника
+                    Imgproc.drawMarker(frame, new Point(contourRects[idx].tl().x + centerOfSquare, contourRects[idx].tl().y + centerOfSquare), new Scalar(255, 0, 0));
                 }
             }
+            // освобождение полигона
             contoursPoly[idx].release();
         }
-//        morphOutput = frame;
+        // отрисовка центра камеры
         Imgproc.drawMarker(frame, new Point(K.get(0, 2)[0], K.get(1, 2)[0]), new Scalar(255, 0, 255));
-        if (usingTelemetry && telemetry != null) {
-            telemetry.update();
-        }
+        // освобождение памяти
         blurredImage.release();
         hsvImage.release();
         mask.release();
@@ -575,52 +725,66 @@ public class ArtifactProcessor implements VisionProcessor {
         contours.clear();
         hierarchy.release();
         contours.clear();
-        return new float[]{x, y, z};
+
+
+        return null;
     }
 
     @Override
     public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
     }
-
+    /// Конверсия координат от системы камеры в систему робота
     private float[] convertCameraToRobot(float[] cameraCord, float[] angeles, float[] objectPos) {
+        /// Матрица координат камеры
         Mat T = new Mat(3, 1, CV_64F);
         T.put(0, 0, cameraCord[0]);
         T.put(1, 0, cameraCord[1]);
         T.put(2, 0, cameraCord[2]);
+        /// Матрица координат объекта
         Mat Pc = new Mat(3, 1, CV_64F);
         Pc.put(0, 0, objectPos[0]);
         Pc.put(1, 0, objectPos[1]);
         Pc.put(2, 0, objectPos[2]);
+        /// координата Roll
         angeles[0] = (float) Math.toRadians(angeles[0]);
+        /// координата Yaw
         angeles[1] = (float) Math.toRadians(angeles[1]);
+        /// координата Pitch
         angeles[2] = (float) Math.toRadians(angeles[2]);
+        /// Матрица угла вращения вокруг оси x
         Mat Rx = Mat.eye(3, 3, CV_64F);
         Rx.put(1, 1, Math.cos(angeles[0]));
         Rx.put(1, 2, -Math.sin(angeles[0]));
         Rx.put(2, 2, Math.cos(angeles[0]));
+        /// Матрица угла вращения вокруг оси y
         Mat Ry = Mat.eye(3, 3, CV_64F);
         Ry.put(1, 1, Math.cos(angeles[1]));
         Ry.put(1, 2, Math.sin(angeles[1]));
         Ry.put(2, 2, Math.cos(angeles[1]));
+        /// Матрица угла вращения вокруг оси z
         Mat Rz = Mat.eye(3, 3, CV_64F);
         Rz.put(1, 1, Math.cos(angeles[2]));
         Rz.put(1, 2, -Math.sin(angeles[2]));
         Rz.put(2, 2, Math.cos(angeles[2]));
-
+        /// Промежуточная матрица
         Mat R_temp = new Mat();
         Core.gemm(Rz, Ry, 1.0, new Mat(), 0.0, R_temp);
+        /// Полная матрица вращения
         Mat R_c_to_r = new Mat();
         Core.gemm(R_temp, Rx, 1.0, new Mat(), 0.0, R_c_to_r);
-
+        // аффинное преобразование
+        // вращение
         Mat RPc = new Mat();
         Core.gemm(R_c_to_r, Pc, 1.0, new Mat(), 0.0, RPc);
-
+        // смещение
+        /// Итоговая матрица
         Mat Pr = new Mat();
         Core.add(RPc, T, Pr);
-
+        /// Получаем координаты в системе робота
         float x_r = (float) Pr.get(0, 0)[0];
         float y_r = (float) Pr.get(1, 0)[0];
         float z_r = (float) Pr.get(2, 0)[0];
+        // освобождение памяти
         T.release();
         Pc.release();
         Rx.release();
@@ -632,7 +796,7 @@ public class ArtifactProcessor implements VisionProcessor {
         Pr.release();
         return new float[]{x_r, y_r, z_r};
     }
-
+    /// Расчет вертикального и горизонтального углов
     private float[] calculateAngle(float x, float y) {
         double fx = K.get(0, 0)[0];
         double fy = K.get(1, 1)[0];
@@ -645,28 +809,20 @@ public class ArtifactProcessor implements VisionProcessor {
         return new float[]{(float) theta_rad, (float) phi_rad};
     }
 
-    public float getX() {
-        return x;
+    public float[] getCameraPos() {
+        return cameraPos;
     }
 
-    public void setX(float x) {
-        this.x = x;
+    public void setCameraPos(float[] cameraPos) {
+        this.cameraPos = cameraPos;
     }
 
-    public float getY() {
-        return y;
+    public float[] getCameraRot() {
+        return cameraRot;
     }
 
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public float getZ() {
-        return z;
-    }
-
-    public void setZ(float z) {
-        this.z = z;
+    public void setCameraRot(float[] cameraRot) {
+        this.cameraRot = cameraRot;
     }
 
 }
