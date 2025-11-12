@@ -34,6 +34,7 @@ public abstract class PhantomOpMode extends LinearOpMode {
         Robot.telemetry = this.telemetry;
         Robot.gamepadDriver = this.gamepad1;
         Robot.gamepadOperator = this.gamepad2;
+        mechanism.clear();
         // инициализация телеметрии
         initTelemetry();
         // инициализация настроек опмода
