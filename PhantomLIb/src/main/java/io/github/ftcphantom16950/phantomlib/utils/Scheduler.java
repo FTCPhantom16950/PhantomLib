@@ -75,7 +75,7 @@ public class Scheduler {
     private boolean isRunning = false;
 
     /// Запуск действий
-    public void run() {
+    public void run() throws InterruptedException {
         if (isRunning) {
             throw new IllegalStateException("Scheduler already running");
         }
