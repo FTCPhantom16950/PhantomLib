@@ -21,24 +21,34 @@ public class ParallelGroup extends Group {
      * @param actions действия которые будут выполняться последовательно
      */
     public ParallelGroup(Group... actions) {
-
         this.actions.addAll(List.of(actions));
     }
 
     /// Метод выполнения действий последовательно
     @Override
-    public void execute() {
+    public void execute() throws InterruptedException {
         for (Group a :
                 actions) {
             Thread thread = new Thread() {
                 @Override
                 public void run() {
                     super.run();
-                    a.execute();
+                    try {
+                        a.execute();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             };
             threads.add(thread);
             thread.start();
+        }
+        int i = 0;
+        for (Thread t :
+                threads) {
+            i++;
+            while (t.isAlive() && opMode.opModeIsActive()) {
+            }
         }
     }
 }

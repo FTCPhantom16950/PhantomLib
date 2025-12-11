@@ -39,7 +39,7 @@ public abstract class InterruptibleAction extends Action {
             run();
         }
         while (!isRunningOnce && !isInterrupted && opMode.opModeIsActive()) {
-           run();
+            run();
         }
         if (isInterrupted && opMode.opModeIsActive()){
             handleInterrupt();

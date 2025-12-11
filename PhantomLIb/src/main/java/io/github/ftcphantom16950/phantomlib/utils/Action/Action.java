@@ -11,9 +11,6 @@ import io.github.ftcphantom16950.phantomlib.utils.PhantomOpMode;
  */
 public abstract class Action extends Group {
     /// Метод для реализации выполнения действия
-    public abstract void execute();
-    public Action() {
-
-    }
-
+    public abstract void execute() throws InterruptedException ;
+    public Action() {}
 }

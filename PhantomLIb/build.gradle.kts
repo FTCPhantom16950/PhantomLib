@@ -38,7 +38,9 @@ android {
         jvmTarget = "11"
     }
 }
+repositories {
 
+}
 dependencies {
     implementation ("org.firstinspires.ftc:Inspection:11.0.0")
     implementation ("org.firstinspires.ftc:Blocks:11.0.0")
@@ -50,6 +52,9 @@ dependencies {
     implementation ("org.firstinspires.ftc:FtcCommon:11.0.0")
     implementation ("org.firstinspires.ftc:Vision:11.0.0")
     implementation("androidx.core:core-ktx:1.15.0")
+    implementation("com.acmerobotics.dashboard:dashboard:0.5.1")
+
+
 }
 afterEvaluate {
     publishing{

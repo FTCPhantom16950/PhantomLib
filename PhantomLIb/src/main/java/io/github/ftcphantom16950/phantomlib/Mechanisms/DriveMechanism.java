@@ -4,11 +4,12 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import static io.github.ftcphantom16950.phantomlib.utils.Robot.*;
 
+import io.github.ftcphantom16950.phantomlib.utils.Mechanism;
 import io.github.ftcphantom16950.phantomlib.utils.Robot;
 
-public class DriveMechanism {
+public class DriveMechanism implements Mechanism {
     private static DcMotorEx lb, lf,rb,rf;
-    private DriveMechanism() {
+    public DriveMechanism() {
     }
     public static String[] motorNames = new String[]{"lf", "lb", "rf", "rb"};
     public static void setLeftBackMotor(String name) {
@@ -35,4 +36,7 @@ public class DriveMechanism {
         motorNames[3] = name;
     }
 
+    @Override
+    public void init() {
+    }
 }

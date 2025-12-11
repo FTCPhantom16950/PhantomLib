@@ -3,5 +3,5 @@ package io.github.ftcphantom16950.phantomlib.utils;
 /// Made by Hkial(Gleb)
 public interface Mechanism {
     /// Метод инициализации механизма
-    boolean init();
+    void init();
 }

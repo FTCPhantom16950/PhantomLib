@@ -22,30 +22,6 @@ public class DriveAction extends Action {
 
     double backRightPower, frontRightPower, backLeftPower, frontLeftPower, denominator;
     private static double x, y, rot;
-    Thread thread = new Thread(() -> {
-        while (opMode.opModeIsActive()) {
-            x = 1.1 * gamepadDriver.left_stick_x + 1.1 * 0.6 * gamepadDriver.right_stick_x;
-            y = -gamepadDriver.left_stick_y - 0.6 * gamepadDriver.right_stick_y;
-            rot = gamepadDriver.left_trigger - gamepadDriver.right_trigger;
-            x = makeLinearToCubic(x);
-            y = makeLinearToCubic(y);
-            rot = makeLinearToCubic(rot);
-            if (-0.1 < x && x < 0.1) {
-                x = 0;
-            }
-            if (-0.1 < y && y < 0.1) {
-                x = 0;
-            }
-            if (-0.1 < rot && rot < 0.1) {
-                x = 0;
-            }
-            if (gamepadDriver.right_bumper) {
-                rot = -0.3;
-            } else if (gamepadDriver.left_bumper) {
-                rot = -0.3;
-            }
-        }
-    });
     Thread motorPower = new Thread(() -> {
         while (opMode.opModeIsActive()) {
             Robot.get(DriveMechanism.motorNames[0], DcMotorEx.class).setPower(makeLinearToCubic(backLeftPower));
@@ -58,8 +34,16 @@ public class DriveAction extends Action {
     @Override
     public void execute() {
         while (opMode.opModeIsActive()) {
-            if (!thread.isAlive()) {
-                thread.start();
+            x = 1.1 * gamepadDriver.left_stick_x + 1.1 * 0.6 * gamepadDriver.right_stick_x;
+            y = -gamepadDriver.left_stick_y - 0.6 * gamepadDriver.right_stick_y;
+            rot = gamepadDriver.left_trigger - gamepadDriver.right_trigger;
+            x = makeLinearToCubic(x);
+            y = makeLinearToCubic(y);
+            rot = makeLinearToCubic(rot);
+            if (gamepadDriver.right_bumper) {
+                rot = -0.3;
+            } else if (gamepadDriver.left_bumper) {
+                rot = -0.3;
             }
             denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rot), 1);
             frontLeftPower = (y + x + rot) / denominator;
