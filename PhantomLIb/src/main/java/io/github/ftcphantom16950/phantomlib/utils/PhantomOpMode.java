@@ -1,7 +1,6 @@
 package io.github.ftcphantom16950.phantomlib.utils;
 
 
-
 import static io.github.ftcphantom16950.phantomlib.utils.Robot.INSTANCE;
 import static io.github.ftcphantom16950.phantomlib.utils.Robot.data;
 import static io.github.ftcphantom16950.phantomlib.utils.Robot.telemetryData;
@@ -17,7 +16,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import io.github.ftcphantom16950.phantomlib.mechanisms.GyroScopeMechanism;
 import io.github.ftcphantom16950.phantomlib.mechanisms.VolatgeMechanism;
 import io.github.ftcphantom16950.phantomlib.utils.action.Action;
 
@@ -75,7 +73,6 @@ public abstract class PhantomOpMode extends LinearOpMode {
     });
 
 
-
     @Override
     public void runOpMode() {
 
@@ -98,7 +95,6 @@ public abstract class PhantomOpMode extends LinearOpMode {
             INSTANCE.hw = hardwareMap;
             INSTANCE.gamepadDriver = gamepad1;
             INSTANCE.gamepadOperator = gamepad2;
-            mechanism.add(new GyroScopeMechanism());
             mechanism.add(new VolatgeMechanism());
             // инициализация телеметрии
             initTelemetry();
