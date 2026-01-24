@@ -1,29 +1,26 @@
-package io.github.ftcphantom16950.phantomlib.utils.Regulators;
-
+package io.github.ftcphantom16950.phantomlib.utils.regulators;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class PIDFController {
+public class PIDFilteredController {
     double output = 0;
-    private double F, I, integralSum, P, D, derivative;
+    private double I, integralSum, P, D, derivative;
     private double kP;
     private double kD;
     private double kI;
-    private double kF;
     private double motorVelocity;
     private double currentError;
     private double previousError;
     private double target;
     private ElapsedTime timer;
     private double derivativeFilter;
-    private double targetIntegerSum;
 
-    public double getTargetIntegerSum() {
-        return targetIntegerSum;
-    }
-
-    public void setTargetIntegerSum(double targetIntegerSum) {
-        this.targetIntegerSum = targetIntegerSum;
+    public PIDFilteredController(double kI, double kD, double kP, double derivativeFilter) {
+        this.kI = kI;
+        this.kD = kD;
+        this.kP = kP;
+        this.derivativeFilter = derivativeFilter;
+        timer = new ElapsedTime();
     }
 
     public double getDerivativeFilter() {
@@ -32,14 +29,6 @@ public class PIDFController {
 
     public void setDerivativeFilter(double derivativeFilter) {
         this.derivativeFilter = derivativeFilter;
-    }
-
-    public PIDFController(double kF, double kI, double kD, double kP) {
-        this.kF = kF;
-        this.kI = kI;
-        this.kD = kD;
-        this.kP = kP;
-        timer = new ElapsedTime();
     }
 
     public double getCurrentError() {
@@ -74,25 +63,20 @@ public class PIDFController {
         this.kI = kI;
     }
 
-    public void setkF(double kF) {
-        this.kF = kF;
-    }
-
     public double calculate() {
         timer.reset();
         currentError = (target - motorVelocity);
-        F = target * kF;
         P = kP * currentError;
         integralSum += currentError * timer.seconds();
-        if (integralSum >= targetIntegerSum) {
-            integralSum = targetIntegerSum;
-        } else if (integralSum <= -targetIntegerSum) {
-            integralSum = -targetIntegerSum;
+        if (integralSum >= 1000) {
+            integralSum = 1000;
+        } else if (integralSum <= -1000) {
+            integralSum = -1000;
         }
         I = integralSum * kI;
         derivative = derivativeFilter * previousError + (1 - derivativeFilter) * currentError;
         D = derivative * kD;
-        output = P + I + D + F;
+        output = P + I + D;
 
         previousError = currentError;
         return output;

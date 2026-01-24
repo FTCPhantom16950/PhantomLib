@@ -1,19 +1,20 @@
-package io.github.ftcphantom16950.phantomlib.utils.Action;
-
-import static io.github.ftcphantom16950.phantomlib.utils.Robot.opMode;
+package io.github.ftcphantom16950.phantomlib.utils.action;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
-import io.github.ftcphantom16950.phantomlib.utils.PhantomOpMode;
-
 
 /**
  * Класс создания прерываемых действий
  * Made by Hkial(Gleb)
  * Last Updated: 08.06.25 04:00
  */
-public abstract class InterruptibleAction extends Action {
+public abstract class InterruptibleAction implements Action {
+    private final LinearOpMode opMode;
     public boolean isInterrupted = false;
+    private boolean isRunningOnce = false;
+
+    public InterruptibleAction(LinearOpMode opMode) {
+        this.opMode = opMode;
+    }
 
     public boolean isRunningOnce() {
         return isRunningOnce;
@@ -22,8 +23,6 @@ public abstract class InterruptibleAction extends Action {
     public void setRunningOnce(boolean runningOnce) {
         isRunningOnce = runningOnce;
     }
-
-    private boolean isRunningOnce = false;
 
     public boolean isInterrupted() {
         return isInterrupted;
@@ -41,12 +40,12 @@ public abstract class InterruptibleAction extends Action {
         while (!isRunningOnce && !isInterrupted && opMode.opModeIsActive()) {
             run();
         }
-        if (isInterrupted && opMode.opModeIsActive()){
+        if (isInterrupted && opMode.opModeIsActive()) {
             handleInterrupt();
         }
     }
+
     public abstract void run();
+
     public abstract void handleInterrupt();
-    public InterruptibleAction() {
-    }
 }

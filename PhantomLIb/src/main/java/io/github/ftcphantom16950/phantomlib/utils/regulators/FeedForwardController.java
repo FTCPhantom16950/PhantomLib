@@ -1,5 +1,4 @@
-package io.github.ftcphantom16950.phantomlib.utils.Regulators;
-
+package io.github.ftcphantom16950.phantomlib.utils.regulators;
 
 public class FeedForwardController {
     private double kV, kA, output, target;
