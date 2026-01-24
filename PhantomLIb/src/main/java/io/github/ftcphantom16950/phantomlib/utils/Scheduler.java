@@ -32,6 +32,7 @@ public class Scheduler {
         /// Метод добавления механизмов в необходимые
         public Builder addMechanisms(Set<Mechanism> mechanisms) {
             if (mechanisms == null) throw new IllegalStateException("Mechanisms in scheduler mustn't be null");
+            Builder.mechanisms.clear();
             Builder.mechanisms.addAll(mechanisms);
             return this;
         }
@@ -39,6 +40,7 @@ public class Scheduler {
         /// Метод добавления механизма в необходимые
         public Builder addMechanism(Mechanism mechanism) {
             if (mechanism == null) throw new IllegalStateException("Mechanism in scheduler mustn't be null");
+            Builder.mechanisms.clear();
             mechanisms.add(mechanism);
             return this;
         }
