@@ -16,9 +16,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven ("https://maven.brott.dev/")
+        maven("https://maven.brott.dev/")
     }
 }
 
 rootProject.name = "PhantomLib"
-include(":PhantomLIb")
+
+include(":OpMode")
+include(":Dashboard")
+include(":Actions")
