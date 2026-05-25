@@ -42,6 +42,7 @@ repositories {
 
 }
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation (libs.inspection)
     implementation (libs.blocks)
     //noinspection Aligned16KB

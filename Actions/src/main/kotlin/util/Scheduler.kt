@@ -43,7 +43,7 @@ class Scheduler private constructor(
      * @since PhantomLin 2.0alpha
      * @see Action
      */
-    fun run() {
+    suspend fun run() {
         if (actions.isEmpty()) throw NullPointerException("No actions found")
         else if (actions.size == 1) {
             actions[0].run()
