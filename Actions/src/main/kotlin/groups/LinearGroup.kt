@@ -1,6 +1,12 @@
 package groups
 
 import actions.Action
+import com.sun.tools.javac.comp.Todo
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
  * Linear group class. With adding to it Actions it will be going sequentially.
@@ -10,29 +16,20 @@ import actions.Action
  * @since PhantomLib 2.0alpha
  * @param various number of actions
  */
-class LinearGroup(vararg actions: Action?) : Group {
-
-
-    override val telemetryMap: HashMap<String, Any?> = HashMap<String, Any?>().apply {
-        for (action in actions) {
-            val notNullAction = action?.telemetryMap ?: throw NullPointerException("Action must not be null")
-            this.putAll(notNullAction)
+class LinearGroup(override vararg val actions: Action) : Group {
+    override val telemetryMap: Map<String, Any?>
+        get() = mutableMapOf<String, Any?>().apply {
+            for (action in actions) {
+                putAll(action.telemetryMap)
+            }
         }
-    }
-
-
-    override val actions: ArrayList<Action> = ArrayList<Action>().apply {
-        for (action in actions) {
-            val notNullAction = action ?: throw NullPointerException("Action must not be null")
-            this.add(notNullAction)
-        }
-    }
 
     override suspend fun run() {
-        for (action in this.actions) {
-            if (!Thread.interrupted()) {
+        for (action in actions) {
+            if (!Thread.interrupted() && currentCoroutineContext().isActive) {
                 action.run()
             }
         }
+
     }
 }

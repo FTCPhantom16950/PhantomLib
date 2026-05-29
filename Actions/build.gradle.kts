@@ -61,7 +61,7 @@ afterEvaluate {
         publications{
             create<MavenPublication>("mavenRelease"){
                 groupId = "io.github.ftcphantom16950"
-                artifactId = "PhantomLib"
+                artifactId = "Actions"
                 version = "1.0"
 
                 from(components["release"])

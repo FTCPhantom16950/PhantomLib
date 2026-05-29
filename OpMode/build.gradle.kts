@@ -52,15 +52,17 @@ dependencies {
     implementation (libs.ftccommon)
     implementation (libs.vision)
     implementation("androidx.core:core-ktx:1.6.0")
-
+    api(project(":Actions"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
 
 }
+
 afterEvaluate {
     publishing{
         publications{
             create<MavenPublication>("mavenRelease"){
                 groupId = "io.github.ftcphantom16950"
-                artifactId = "PhantomLib"
+                artifactId = "OpMode"
                 version = "1.0"
 
                 from(components["release"])

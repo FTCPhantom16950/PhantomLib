@@ -14,7 +14,7 @@ interface Mechanism {
      * @see HardwareDevice
      */
     val devices: LinkedHashMap<String, HardwareDevice>
-
+    val telemetryMap: Map<String, Any?>
     /**
      * Method for initializing, it can be automatized by scheduler
      * @author Hkial

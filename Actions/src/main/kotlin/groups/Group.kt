@@ -8,14 +8,8 @@ import actions.Action
  */
 interface Group : Action {
     /**
-     * Map that contains all your telemetry
-     */
-    override val telemetryMap: HashMap<String, Any?>
-    override suspend fun run()
-
-    /**
      * List that contains your Actions
      * @see Action
      */
-    val actions: List<Action>
+    val actions: Array<out Action>
 }

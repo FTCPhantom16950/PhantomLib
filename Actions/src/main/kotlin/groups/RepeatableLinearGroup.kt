@@ -1,30 +1,27 @@
 package groups
 
 import actions.Action
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
-class RepeatableLinearGroup(vararg actions: Action?) : Group {
-    override val telemetryMap: HashMap<String, Any?> = HashMap<String, Any?>().apply {
-        for (action in actions) {
-            val notNullAction = action?.telemetryMap ?: throw NullPointerException("Action must not be null")
-            this.putAll(notNullAction)
+class RepeatableLinearGroup(override vararg val actions: Action) : Group {
+    override val telemetryMap: Map<String, Any?>
+        get() = mutableMapOf<String, Any?>().apply {
+            for (action in actions) {
+                putAll(action.telemetryMap)
+            }
         }
-    }
 
 
-    override val actions: ArrayList<Action> = ArrayList<Action>().apply {
-        for (action in actions) {
-            val notNullAction = action ?: throw NullPointerException("Action must not be null")
-            this.add(notNullAction)
-        }
-    }
     var shouldRepeat: Boolean = false
 
     override suspend fun run() {
-        while (shouldRepeat && currentCoroutineContext().isActive) {
-            for (action in this.actions) {
-                if (!Thread.interrupted()) {
+        while (shouldRepeat){
+            for (action in actions) {
+                if (!Thread.interrupted() && currentCoroutineContext().isActive) {
                     action.run()
                 }
             }

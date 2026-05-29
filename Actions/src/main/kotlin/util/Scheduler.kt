@@ -19,6 +19,20 @@ import mechanism.Mechanism
 class Scheduler private constructor(
     val mechanisms: LinkedHashSet<Mechanism>, val actions: ArrayList<Action>
 ) {
+    var mechanismsInitializing: Boolean = false
+    var actionsStarted: Boolean = false
+    val telemetryMap: Map<String, Any?>
+        get() = mutableMapOf<String, Any?>().apply {
+            if (mechanismsInitializing){
+                for (mechanism in mechanisms) {
+                    putAll(mechanism.telemetryMap)
+                }
+            } else if (actionsStarted){
+                for (action in actions) {
+                    putAll(action.telemetryMap)
+                }
+            }
+        }
     val devices: LinkedHashMap<String, HardwareDevice> = LinkedHashMap()
 
     /**
@@ -29,7 +43,8 @@ class Scheduler private constructor(
      * @since PhantomLib 2.0alpha
      */
     fun initMechanisms() {
-        if (mechanisms.isEmpty()) throw NullPointerException("Mechanisms is null")
+        mechanismsInitializing = true
+        require(mechanisms.isNotEmpty()) { "At least one MECHANISM is required" }
         for (mechanism in mechanisms) {
             mechanism.init()
             devices.putAll(mechanism.devices)
@@ -44,8 +59,10 @@ class Scheduler private constructor(
      * @see Action
      */
     suspend fun run() {
-        if (actions.isEmpty()) throw NullPointerException("No actions found")
-        else if (actions.size == 1) {
+        mechanismsInitializing = false
+        actionsStarted = true
+        require(actions.isNotEmpty()) { "There must be at least one ACTION" }
+        if (actions.size == 1) {
             actions[0].run()
         } else {
             for (action in actions) {
