@@ -17,5 +17,5 @@ interface Action {
      * @since PhantomLib 2.0alpha
      * @see Action
      */
-    suspend fun run()
+    suspend fun run(): Void
 }

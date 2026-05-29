@@ -20,5 +20,5 @@ interface Mechanism {
      * @author Hkial
      * @since PhantomLib 2.0alpha
      */
-    fun init()
+    fun init(): Void
 }
